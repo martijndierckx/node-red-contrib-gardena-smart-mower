@@ -68,4 +68,4 @@ You can command the mower by sending a message with:
 
 ![Alt text](demoflow.png)
 
-https://github.com/martijndierckx/node-red-contrib-gardena-smart-mower/blob/efcb5789b564cce2cb0d9e4ca6d703a3180b9778/demoflow.json#L1C1-L135C2
+https://github.com/martijndierckx/node-red-contrib-gardena-smart-mower/blob/efcb5789b564cce2cb0d9e4ca6d703a3180b9778/demoflow.json#L1-L135
