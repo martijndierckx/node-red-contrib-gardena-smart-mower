@@ -1,0 +1,38 @@
+{
+  "author": "Martijn Dierckx",
+  "license": "GPL",
+  "name": "node-red-contrib-gardena-smart-mower",
+  "description": "Nodes for controlling/monitoring Gardena smart system mowers",
+  "version": "0.0.1",
+  "node-red": {
+    "version": ">=2.2.0",
+    "nodes": {
+      "gardena-mower-config": "nodes/config.js",
+      "gardena-mower": "nodes/mower.js"
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/martijndierckx/node-red-contrib-gardena-smart-mower/issues"
+  },
+  "homepage": "https://github.com/martijndierckx/node-red-contrib-gardena-smart-mower",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martijndierckx/node-red-contrib-gardena-smart-mower.git"
+  },
+  "keywords": [
+    "node-red",
+    "gardena",
+    "sileno",
+    "mower",
+    "lawn mower"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {
+    "gardena-smart-system": "^0.0.9"
+  },
+  "scripts": {
+    "debug": "node /Users/martijn/.nvm/versions/node/v18.12.0/lib/node_modules/node-red/red.js"
+  }
+}

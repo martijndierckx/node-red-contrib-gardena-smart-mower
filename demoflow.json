@@ -1,0 +1,135 @@
+[
+  {
+    "id": "62b8dd48a1143cf4",
+    "type": "tab",
+    "label": "Gardena mower demo",
+    "disabled": false,
+    "info": "",
+    "env": []
+  },
+  {
+    "id": "cd2f0a49cb12d7a5",
+    "type": "debug",
+    "z": "62b8dd48a1143cf4",
+    "name": "debug",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 590,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "b6ac6be34c139237",
+    "type": "gardena-mower",
+    "z": "62b8dd48a1143cf4",
+    "name": "Mower",
+    "config": "a06983709d66f375",
+    "mower": "",
+    "x": 410,
+    "y": 140,
+    "wires": [["cd2f0a49cb12d7a5"]],
+    "inputLabels": ["jj"]
+  },
+  {
+    "id": "1a8276363070243b",
+    "type": "inject",
+    "z": "62b8dd48a1143cf4",
+    "name": "startMowing",
+    "props": [
+      {
+        "p": "action",
+        "v": "startMowing",
+        "vt": "str"
+      },
+      {
+        "p": "duration",
+        "v": "60",
+        "vt": "num"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 170,
+    "y": 60,
+    "wires": [["b6ac6be34c139237"]]
+  },
+  {
+    "id": "f2249810ef268204",
+    "type": "inject",
+    "z": "62b8dd48a1143cf4",
+    "name": "resumeSchedule",
+    "props": [
+      {
+        "p": "action",
+        "v": "resumeSchedule",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 160,
+    "y": 120,
+    "wires": [["b6ac6be34c139237"]]
+  },
+  {
+    "id": "083f045bce781b57",
+    "type": "inject",
+    "z": "62b8dd48a1143cf4",
+    "name": "parkUntilNextTask",
+    "props": [
+      {
+        "p": "action",
+        "v": "parkUntilNextTask",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 150,
+    "y": 180,
+    "wires": [["b6ac6be34c139237"]]
+  },
+  {
+    "id": "849da370313a605e",
+    "type": "inject",
+    "z": "62b8dd48a1143cf4",
+    "name": "parkUntilFurtherNotice",
+    "props": [
+      {
+        "p": "action",
+        "v": "parkUntilFurtherNotice",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 140,
+    "y": 240,
+    "wires": [["b6ac6be34c139237"]]
+  },
+  {
+    "id": "a06983709d66f375",
+    "type": "gardena-mower-config",
+    "name": "Gardena smart system",
+    "location": "",
+    "credentials": {}
+  }
+]

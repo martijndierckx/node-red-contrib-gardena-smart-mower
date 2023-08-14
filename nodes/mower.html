@@ -1,0 +1,208 @@
+<script type="text/html" data-template-name="gardena-mower">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-config"
+      ><i class="fa fa-cogs"></i> Gardena Configuration</label
+    >
+    <input type="text" id="node-input-config" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-mower"><i class="fa fa-map-car"></i> Mower</label>
+    <div style="width: 70%; display: inline-flex">
+      <select id="node-input-mower" disabled style="flex-grow: 1">
+        <!-- <option value="id">name</option> -->
+      </select>
+      <button
+        id="node-mower-scan"
+        style="margin-left: 10px"
+        class="red-ui-button"
+      >
+        <i class="fa fa-search"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="form-tips">
+    <span>You can command the mower by sending a message with:</span>
+    <ul>
+      <li>
+        msg.action:
+        <ul>
+          <li>resumeSchedule</li>
+          <li>startMowing</li>
+          <li>parkUntilFurtherNotice</li>
+          <li>parkUntilNextTask</li>
+        </ul>
+      </li>
+      <li>
+        msg.duration: Optional duration in minutes (only for 'startMowing'
+        action)
+      </li>
+    </ul>
+  </div>
+</script>
+
+<script type="text/html" data-help-name="gardena-mower">
+  <h3>Configuration</h3>
+  <dl class="message-properties">
+    <dt class="required">Name <span class="property-type">string</span></dt>
+    <dd>Choose any name to identify your node</dd>
+    <dt class="required">
+      Gardena configuration <span class="property-type">select</span>
+    </dt>
+    <dd>
+      Pick a Gardena configuration containing your credentials and a Gardena
+      location
+    </dd>
+    <dt class="required">Mower <span class="property-type">select</span></dt>
+    <dd>Select the appropriate mower</dd>
+  </dl>
+  <h3>Mower update events</h3>
+  <p>
+    When a status update is available for the Gardena smart system mower, a new
+    message is sent:
+  </p>
+  <ul>
+    <li>msg.mower: id & name of the mower</li>
+    <li>
+      msg.payload: latest values of all attrbutes
+      <ul>
+        <li>state</li>
+        <li>stateTs</li>
+        <li>activity</li>
+        <li>activityTs</li>
+        <li>lastErrorCode</li>
+        <li>lastErrorCodeTs</li>
+        <li>operatingHours</li>
+        <li>batteryLevel</li>
+        <li>batteryLevelTs</li>
+        <li>batteryState,</li>
+        <li>batteryStateTs</li>
+        <li>rfLinkLevel</li>
+        <li>rfLinkLevelTs</li>
+        <li>rfLinkState</li>
+      </ul>
+    </li>
+    <li>msg.updatesList: list of attributes which have been updated</li>
+  </ul>
+  <h3>Commanding the mower</h3>
+  <p>You can command the mower by sending a message with:</p>
+  <ul>
+    <li>
+      msg.action:
+      <ul>
+        <li>resumeSchedule</li>
+        <li>startMowing</li>
+        <li>parkUntilFurtherNotice</li>
+        <li>parkUntilNextTask</li>
+      </ul>
+    </li>
+    <li>
+      msg.duration: Optional duration in minutes (only for 'startMowing' action)
+    </li>
+  </ul>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("gardena-mower", {
+    category: "Gardena",
+    paletteLabel: "Gardena Mower",
+    color: "#FCB494",
+    outputs: 1,
+    inputs: 1,
+    icon: "gardena.svg",
+    align: "left",
+    defaults: {
+      name: { value: "Mower" },
+      config: { type: "gardena-mower-config", required: true },
+      mower: {
+        required: true,
+        validate: (v) => {
+          return typeof v === "string" && v.length > 0;
+        },
+      },
+    },
+    label: () => {
+      return this.name || "Mower";
+    },
+    oneditprepare: function () {
+      // Function to retrieve mowers
+      const populateMowers = (selectedValue) => {
+        // Lock UI
+        $("#node-input-mower").prop("disabled", true);
+        $("#node-mower-scan")
+          .prop("disabled", true)
+          .html(`<i class="fa fa-spinner fa-spin"></i>`);
+
+        // Get mowers
+        $.getJSON("gardena-smart-mower/get-mowers", {
+          configNodeId: this.config,
+        })
+          .done((mowers) => {
+            // Error?
+            if (mowers.length === 0) {
+              RED.notify(`No mowers found`, "error");
+            } else {
+              // Replace options in select
+              $("#node-input-mower").replaceWith(
+                `<select id="node-input-mower" style="width: 100%;"></select>`
+              );
+              mowers.forEach((mower) => {
+                $("#node-input-mower").append(
+                  `<option value="${mower.id}" data-id="${mower.id}">${mower.name}</option>`
+                );
+              });
+
+              // Select provided value
+              if (selectedValue) {
+                $("#node-input-mowers").val(selectedValue);
+              }
+              // Select first if only 1 returned
+              else if (mowers.length === 1) {
+                $("#node-input-mowers").val(mowers[0].id);
+              }
+
+              // Enable select & hide search button
+              $("#node-input-mower").prop("disabled", false);
+              $("#node-mower-scan").hide();
+            }
+          })
+          .fail((jqxhr, textStatus, error) => {
+            RED.notify(`Failed retrieving Gardena mowers`, {
+              type: "error",
+            });
+          })
+          .always(() => {
+            // Unlock UI
+            $("#node-mower-scan")
+              .prop("disabled", false)
+              .html(`<i class="fa fa-search"></i>`);
+          });
+      };
+
+      // Get mowers on edit of existing node
+      if (this.config) {
+        populateMowers(this.mower);
+      }
+
+      // Get mowers when scan button clicked
+      $("#node-mower-scan").click(() => {
+        if (!$("#node-config-input-scan").prop("disabled")) {
+          RED.notify(`Scanning for Gardena mowers ...`);
+
+          populateMowers();
+        }
+      });
+
+      // Re-enable scan button when config changed
+      $("#node-input-config").change(() => {
+        $("#node-mower-scan").show();
+      });
+    },
+  });
+</script>

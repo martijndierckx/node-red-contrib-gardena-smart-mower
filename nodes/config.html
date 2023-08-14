@@ -1,0 +1,175 @@
+<script type="text/html" data-template-name="gardena-mower-config">
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-clientid"
+      ><i class="fa fa-id-badge"></i> Client ID</label
+    >
+    <input
+      type="text"
+      id="node-config-input-clientid"
+      placeholder="Client ID"
+    />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-clientsecret"
+      ><i class="fa fa-key"></i> Client Secret</label
+    >
+    <input
+      type="text"
+      id="node-config-input-clientsecret"
+      placeholder="Client Secret"
+    />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-location"
+      ><i class="fa fa-map-marker"></i> Location</label
+    >
+    <div style="width: 70%; display: inline-flex">
+      <select id="node-config-input-location" disabled style="flex-grow: 1">
+        <!-- <option value="id">name</option> -->
+      </select>
+      <button
+        id="node-config-location-scan"
+        style="margin-left: 10px"
+        class="red-ui-button"
+      >
+        <i class="fa fa-search"></i>
+      </button>
+    </div>
+  </div>
+</script>
+
+<script type="text/html" data-help-name="gardena-mower-config">
+  <p>Setting for Gardena smart mower connection</p>
+  <h3>Configuration</h3>
+  <dl class="message-properties">
+    <dt class="required">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node</dd>
+    <dt class="required">Client ID <span class="property-type">string</span></dt><dd>Fill in the Client ID which can be obtained from the Gardena developer portal</dd>
+    <dt class="required">Client Secret <span class="property-type">string</span></dt><dd>Fill in the Client Secret which can be obtained from the Gardena developer portal</dd>
+    <dt class="required">Location <span class="property-type">select</span></dt><dd>Select the location where your mower is located</dd>
+  </dl>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("gardena-mower-config", {
+    category: "config",
+    paletteLabel: "Gardena Config",
+    defaults: {
+      name: { value: "Gardena smart system" },
+      location: {
+        required: true,
+        validate: (v) => {
+          return typeof v === "string" && v.length > 0;
+        },
+      },
+    },
+    credentials: {
+      clientid: { required: true },
+      clientsecret: { required: true },
+    },
+    label: () => {
+      return this.name || "Gardena smart system";
+    },
+    oneditprepare: function () {
+      // Function to retrieve locations
+      const populateLocations = (clientid, clientsecret, selectedValue) => {
+        // Lock UI
+        $("#node-config-input-location").prop("disabled", true);
+        $("#node-config-location-scan")
+          .prop("disabled", true)
+          .html(`<i class="fa fa-spinner fa-spin"></i>`);
+
+        // Get locations
+        $.getJSON("gardena-smart-mower/get-locations", {
+          clientid: $("#node-config-input-clientid").val(),
+          clientsecret: $("#node-config-input-clientsecret").val(),
+        })
+          .done((locations) => {
+            // Error?
+            if (locations.length === 0) {
+              RED.notify(`No locations found`, "error");
+            } else {
+              // Replace options in select
+              $("#node-config-input-location").replaceWith(
+                `<select id="node-config-input-location" style="width: 100%;"></select>`
+              );
+              locations.forEach((loc) => {
+                $("#node-config-input-location").append(
+                  `<option value="${loc.id}" data-id="${loc.id}">${loc.name}</option>`
+                );
+              });
+
+              // Select provided value
+              if (selectedValue) {
+                $("#node-config-input-locations").val(selectedValue);
+              }
+              // Select first if only 1 returned
+              else if (locations.length === 1) {
+                $("#node-config-input-locations").val(locations[0].id);
+              }
+
+              // Enable select & hide search button
+              $("#node-config-input-location").prop("disabled", false);
+              $("#node-config-location-scan").hide();
+            }
+          })
+          .fail((jqxhr, textStatus, error) => {
+            if (jqxhr.status == 401) {
+              RED.notify(`Wrong Gardena credentials`, { type: "error" });
+            } else {
+              RED.notify(`Failed retrieving Gardena locations`, {
+                type: "error",
+              });
+            }
+          })
+          .always(() => {
+            // Unlock UI
+            $("#node-config-location-scan")
+              .prop("disabled", false)
+              .html(`<i class="fa fa-search"></i>`);
+          });
+      };
+
+      // Get locations on edit of existing config node
+      if (
+        this.location &&
+        this.credentials.clientid &&
+        this.credentials.clientsecret
+      ) {
+        populateLocations(
+          this.credentials.clientid,
+          this.credentials.clientsecret,
+          this.location
+        );
+      }
+
+      // Get locations when scan button clicked
+      $("#node-config-location-scan").click(() => {
+        if (!$("#node-config-location-scan").prop("disabled")) {
+          RED.notify(`Scanning for Gardena locations ...`);
+
+          populateLocations(
+            $("#node-config-input-clientid").val(),
+            $("#node-config-input-clientsecret").val()
+          );
+        }
+      });
+
+      // Re-enable scan button & reset locations list when id or secret changes
+      $("#node-config-input-clientid, #node-config-input-clientsecret").change(
+        () => {
+          $("#node-config-location-scan").show();
+          $("#node-config-input-location").replaceWith(
+            `<select id="node-config-input-location" disabled style="flex-grow: 1"></select>`
+          );
+        }
+      );
+    },
+  });
+</script>
