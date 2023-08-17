@@ -30,7 +30,7 @@
     "node": ">=16"
   },
   "dependencies": {
-    "gardena-smart-system": "^0.0.9"
+    "gardena-smart-system": "^0.0.10"
   },
   "scripts": {
     "debug": "node /Users/martijn/.nvm/versions/node/v18.12.0/lib/node_modules/node-red/red.js"
