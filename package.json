@@ -2,7 +2,7 @@
   "license": "GPL",
   "name": "@martijndierckx/node-red-contrib-gardena-smart-mower",
   "description": "Nodes for controlling/monitoring Gardena smart system mowers",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "Martijn Dierckx",
     "url": "https://github.com/martijndierckx"
@@ -33,7 +33,7 @@
     "node": ">=16"
   },
   "dependencies": {
-    "gardena-smart-system": "^0.0.10"
+    "gardena-smart-system": "^0.0.11"
   },
   "scripts": {
     "debug": "node /Users/martijn/.nvm/versions/node/v18.12.0/lib/node_modules/node-red/red.js"
